@@ -1,0 +1,13 @@
+1. No Mercado Pago, copie seu ACCESS TOKEN.
+2. Cole em:
+   MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
+
+3. Configure o webhook:
+   http://localhost:3000/api/mercadopago/webhook
+
+4. Rode:
+   npm install
+   npx prisma generate
+   npm run dev
+
+5. Teste a compra no site.

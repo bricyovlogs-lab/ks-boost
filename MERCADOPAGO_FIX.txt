@@ -1,0 +1,16 @@
+Corrigi o erro do Mercado Pago para teste local.
+
+O problema era o uso de auto_return/back_urls com localhost.
+Agora:
+- em localhost o checkout é criado sem auto_return
+- em produção (URL pública) ele usa back_urls normalmente
+
+Para testar:
+1. npm install
+2. npx prisma generate
+3. npm run dev
+4. tentar comprar de novo
+
+Observação:
+em localhost o retorno automático ao /success pode não acontecer.
+Mas o checkout deve abrir normalmente.

@@ -1,0 +1,13 @@
+Configure no seu arquivo .env:
+
+DISCORD_WEBHOOK_SALES="cole aqui o webhook de vendas aprovadas"
+DISCORD_WEBHOOK_PAYOUTS="cole aqui o webhook de solicitação de saque"
+
+Depois reinicie o projeto.
+
+Rotas que notificam:
+- venda aprovada: webhook da Stripe após checkout.session.completed
+- solicitação de saque: POST /api/influencer/payout-request
+
+Observação:
+Mantenha os webhooks no .env e não hardcoded no código para deploy real com segurança.

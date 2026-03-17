@@ -1,0 +1,286 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  AFFILIATE
+  RESELLER
+}
+
+enum LicensePlan {
+  DAYS_30
+  DAYS_90
+  LIFETIME
+}
+
+enum LicenseStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  BLOCKED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum ActivationStatus {
+  ACTIVE
+  DEACTIVATED
+  BLOCKED
+}
+
+enum CouponDiscountType {
+  PERCENT
+  FIXED
+}
+
+enum PayoutRequestStatus {
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id               String            @id @default(cuid())
+  name             String?
+  email            String            @unique
+  passwordHash     String?
+  emailVerified    Boolean           @default(false)
+  role             UserRole          @default(CUSTOMER)
+  stripeCustomerId String?           @unique
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  licenses         License[]
+  payments         Payment[]
+  adminLogs        AdminLog[]        @relation("AdminPerformedLogs")
+  affiliateProfile AffiliateProfile?
+
+  @@index([role])
+  @@index([createdAt])
+}
+
+model AffiliateProfile {
+  id                    String            @id @default(cuid())
+  userId                String            @unique
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  displayName           String
+  codePrefix            String?
+  commissionPercent     Float             @default(10)
+  totalRevenueCents     Int               @default(0)
+  totalCommissionCents  Int               @default(0)
+  paidOutCents          Int               @default(0)
+  pendingPayoutCents    Int               @default(0)
+  payoutPixName         String?
+  payoutPixKey          String?
+  isActive              Boolean           @default(true)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  coupons               Coupon[]
+  payments              Payment[]
+  payoutRequests        PayoutRequest[]
+
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+model Coupon {
+  id                    String             @id @default(cuid())
+  code                  String             @unique
+  label                 String?
+  discountType          CouponDiscountType
+  discountValue         Float
+  isActive              Boolean            @default(true)
+  maxUses               Int?
+  usedCount             Int                @default(0)
+  startsAt              DateTime?
+  endsAt                DateTime?
+  stripeCouponId        String?            @unique
+  stripePromotionCodeId String?            @unique
+
+  affiliateProfileId    String?
+  affiliateProfile      AffiliateProfile?  @relation(fields: [affiliateProfileId], references: [id], onDelete: SetNull)
+
+  payments              Payment[]
+
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([isActive])
+  @@index([affiliateProfileId])
+  @@index([startsAt])
+  @@index([endsAt])
+}
+
+model License {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  key             String         @unique @db.VarChar(32)
+  plan            LicensePlan
+  status          LicenseStatus  @default(PENDING)
+
+  buyerEmail      String
+  priceAmount     Int
+  currency        String         @default("BRL") @db.VarChar(10)
+  durationDays    Int?
+  isLifetime      Boolean        @default(false)
+
+  hwid            String?        @db.VarChar(255)
+  activationLimit Int            @default(1)
+  activationCount Int            @default(0)
+  hwidResetCount  Int            @default(0)
+
+  createdAt       DateTime       @default(now())
+  activatedAt     DateTime?
+  expiresAt       DateTime?
+  lastValidatedAt DateTime?
+  lastUsedAt      DateTime?
+  updatedAt       DateTime       @updatedAt
+
+  paymentId       String?        @unique
+  payment         Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  activations     Activation[]
+  adminLogs       AdminLog[]     @relation("LicenseAdminLogs")
+  notes           String?
+
+  @@index([userId])
+  @@index([buyerEmail])
+  @@index([status])
+  @@index([plan])
+  @@index([hwid])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+model Payment {
+  id                    String             @id @default(cuid())
+  userId                String
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status                PaymentStatus      @default(PENDING)
+  plan                  LicensePlan
+  amount                Int
+  originalAmount        Int?
+  discountAmount        Int?
+  currency              String             @default("BRL") @db.VarChar(10)
+
+  stripeSessionId       String?            @unique
+  stripePaymentIntentId String?            @unique
+  stripeCustomerId      String?
+  stripePriceId         String?
+  stripeEventId         String?            @unique
+
+  customerEmail         String
+  customerName          String?
+
+  couponId              String?
+  coupon                Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  couponCode            String?
+
+  affiliateProfileId    String?
+  affiliateProfile      AffiliateProfile?  @relation(fields: [affiliateProfileId], references: [id], onDelete: SetNull)
+  affiliateCommissionCents Int             @default(0)
+
+  paidAt                DateTime?
+  refundedAt            DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  license               License?
+
+  @@index([userId])
+  @@index([status])
+  @@index([plan])
+  @@index([customerEmail])
+  @@index([createdAt])
+  @@index([couponId])
+  @@index([affiliateProfileId])
+}
+
+model PayoutRequest {
+  id                  String              @id @default(cuid())
+  affiliateProfileId  String
+  affiliateProfile    AffiliateProfile    @relation(fields: [affiliateProfileId], references: [id], onDelete: Cascade)
+
+  amountCents         Int
+  pixName             String
+  pixKey              String
+  status              PayoutRequestStatus @default(PENDING)
+  requestedAt         DateTime            @default(now())
+  reviewedAt          DateTime?
+  paidAt              DateTime?
+  notes               String?
+
+  @@index([affiliateProfileId])
+  @@index([status])
+  @@index([requestedAt])
+}
+
+model Activation {
+  id               String           @id @default(cuid())
+  licenseId        String
+  license          License          @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  hwid             String           @db.VarChar(255)
+  appVersion       String?          @db.VarChar(50)
+  ipAddress        String?          @db.VarChar(100)
+  machineName      String?          @db.VarChar(100)
+  osVersion        String?          @db.VarChar(100)
+
+  status           ActivationStatus @default(ACTIVE)
+
+  firstActivatedAt DateTime         @default(now())
+  lastCheckAt      DateTime         @default(now())
+  deactivatedAt    DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([licenseId])
+  @@index([hwid])
+  @@index([status])
+  @@index([lastCheckAt])
+  @@unique([licenseId, hwid])
+}
+
+model AdminLog {
+  id           String    @id @default(cuid())
+  adminId      String
+  admin        User      @relation("AdminPerformedLogs", fields: [adminId], references: [id], onDelete: Cascade)
+  licenseId    String?
+  license      License?  @relation("LicenseAdminLogs", fields: [licenseId], references: [id], onDelete: SetNull)
+  action       String    @db.VarChar(100)
+  targetType   String    @db.VarChar(50)
+  targetId     String?   @db.VarChar(100)
+  description  String?
+  metadataJson Json?
+  createdAt    DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([licenseId])
+  @@index([action])
+  @@index([targetType])
+  @@index([createdAt])
+}

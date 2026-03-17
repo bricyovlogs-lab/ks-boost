@@ -1,0 +1,9 @@
+node_modules
+.next
+.env
+*.zip
+stripe.exe
+.vercel
+dist
+build
+coverage
