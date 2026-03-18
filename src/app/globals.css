@@ -776,3 +776,5 @@ body {
 .premium-grid-coupons-v10 > .premium-panel {
   min-width: 0;
 }
+
+.error-box { color: #ffb3b3; font-size: 14px; }

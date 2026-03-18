@@ -1,0 +1,12 @@
+Correção aplicada:
+- o modal de compra agora usa fetch em /api/checkout/create-session
+- quando a API retorna { url }, o site faz window.location.href para o Mercado Pago
+- texto atualizado para Mercado Pago
+- mensagem de erro mostrada no modal se a API falhar
+
+Depois de substituir os arquivos:
+1. npm install
+2. npm run build
+3. git add .
+4. git commit -m "fix mercado pago checkout redirect"
+5. git push
