@@ -12,8 +12,9 @@ import {
   SearchIcon,
 } from "@/components/ui-icons";
 
-export default async function AdminCouponsPage() {
+export default async function AdminCouponsPage({ searchParams }: { searchParams?: Promise<{ error?: string; success?: string }> }) {
   await requireAdmin();
+  const params = (await searchParams) || {};
   const coupons = await prisma.coupon.findMany({
     include: {
       affiliateProfile: { include: { user: true } },
@@ -55,6 +56,8 @@ export default async function AdminCouponsPage() {
               </div>
             </div>
 
+            {params.error ? <div className="premium-panel" style={{ marginBottom: 16, borderColor: "rgba(255,80,80,.4)" }}><strong>Erro:</strong> {params.error}</div> : null}
+            {params.success ? <div className="premium-panel" style={{ marginBottom: 16, borderColor: "rgba(0,200,120,.4)" }}>Cupom criado com sucesso.</div> : null}
             <div className="premium-grid-coupons-v10">
               <div className="premium-panel coupon-create-panel-v10">
                 <div className="panel-head-neo">
