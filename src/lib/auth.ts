@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import type { NextRequest } from "next/server";
 import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -22,12 +23,12 @@ export async function comparePassword(password: string, hash: string) {
   return bcrypt.compare(password, hash);
 }
 
-export async function createSession(user: {
+export async function createSessionToken(user: {
   id: string;
   email: string;
   role: UserRole;
 }) {
-  const token = await new SignJWT({
+  return new SignJWT({
     sub: user.id,
     email: user.email,
     role: user.role,
@@ -36,6 +37,14 @@ export async function createSession(user: {
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(getJwtSecret());
+}
+
+export async function createSession(user: {
+  id: string;
+  email: string;
+  role: UserRole;
+}) {
+  const token = await createSessionToken(user);
 
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {
@@ -50,6 +59,41 @@ export async function createSession(user: {
 export async function clearSession() {
   const cookieStore = await cookies();
   cookieStore.delete(COOKIE_NAME);
+}
+
+
+export async function getSessionUserFromToken(token: string | null | undefined) {
+  if (!token) return null;
+
+  const payload = await verifySessionToken(token);
+  if (!payload?.sub) return null;
+
+  return prisma.user.findUnique({
+    where: { id: payload.sub },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+    },
+  });
+}
+
+export function getBearerTokenFromRequest(request: Request | NextRequest) {
+  const header = request.headers.get("authorization") || request.headers.get("Authorization");
+  if (!header) return null;
+  const [scheme, value] = header.split(" ");
+  if (!scheme || !value || scheme.toLowerCase() !== "bearer") return null;
+  return value.trim();
+}
+
+export async function getSessionUserFromRequest(request: Request | NextRequest) {
+  const bearerToken = getBearerTokenFromRequest(request);
+  if (bearerToken) {
+    return getSessionUserFromToken(bearerToken);
+  }
+
+  return getSessionUser();
 }
 
 export async function getSessionUser() {
@@ -69,6 +113,12 @@ export async function getSessionUser() {
       role: true,
     },
   });
+}
+
+
+export async function requireUserApi(request: Request | NextRequest) {
+  const user = await getSessionUserFromRequest(request);
+  return user;
 }
 
 export async function requireUser() {

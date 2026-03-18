@@ -251,6 +251,50 @@ export async function createLicenseFromPayment(params: {
   });
 }
 
+
+export async function getBestLicenseForUser(userId: string) {
+  const licenses = await prisma.license.findMany({
+    where: { userId },
+    include: { activations: true },
+    orderBy: [{ createdAt: "desc" }],
+  });
+
+  if (!licenses.length) return null;
+
+  const active = licenses.find((license) => license.status === LicenseStatus.ACTIVE && !isExpired(license));
+  if (active) return active;
+
+  const blocked = licenses.find((license) =>
+    license.status === LicenseStatus.BLOCKED ||
+    license.status === LicenseStatus.REFUNDED ||
+    license.status === LicenseStatus.CANCELLED
+  );
+  if (blocked) return blocked;
+
+  const expired = licenses.find((license) => isExpired(license) || license.status === LicenseStatus.EXPIRED);
+  if (expired) return expired;
+
+  return licenses[0];
+}
+
+export function mapLicenseResultStatus(code: string) {
+  switch (code) {
+    case "ACTIVE":
+    case "ACTIVATED":
+      return "active";
+    case "EXPIRED":
+      return "expired";
+    case "HWID_MISMATCH":
+      return "invalid_device";
+    case "BLOCKED":
+      return "blocked";
+    case "INVALID":
+      return "invalid";
+    default:
+      return code.toLowerCase();
+  }
+}
+
 export async function createManualLicense(params: {
   email: string;
   plan: LicensePlan;

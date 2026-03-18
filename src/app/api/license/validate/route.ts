@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { serializeLicenseResponse, validateLicenseCore } from "@/modules/licenses/license.service";
-import { licensePayloadSchema } from "@/validators/license";
+import { requireUserApi } from "@/lib/auth";
+import { getBestLicenseForUser, mapLicenseResultStatus, serializeLicenseResponse, validateLicenseCore } from "@/modules/licenses/license.service";
+import { licenseSessionPayloadSchema } from "@/validators/license";
 
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") || "local";
@@ -10,17 +11,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: "Muitas tentativas. Tente novamente em instantes." }, { status: 429 });
   }
 
-  const payload = licensePayloadSchema.parse(await request.json());
-  const result = await validateLicenseCore({ key: payload.key, hwid: payload.hwid });
+  const payload = licenseSessionPayloadSchema.parse(await request.json());
+
+  let key = payload.key;
+  if (!key) {
+    const user = await requireUserApi(request);
+    if (!user) {
+      return NextResponse.json({ success: false, status: "invalid", message: "Não autenticado." }, { status: 401 });
+    }
+
+    const license = await getBestLicenseForUser(user.id);
+    if (!license) {
+      return NextResponse.json({ success: false, status: "no_license", message: "Sua conta não possui licença ativa." }, { status: 404 });
+    }
+    key = license.key;
+  }
+
+  const result = await validateLicenseCore({ key, hwid: payload.hwid });
 
   if (!result.ok || !("license" in result) || !result.license) {
-    return NextResponse.json({ success: false, status: result.code, message: result.message });
+    return NextResponse.json({ success: false, status: mapLicenseResultStatus(result.code), rawStatus: result.code, message: result.message });
   }
 
   return NextResponse.json({
     success: true,
-    status: result.code,
+    status: mapLicenseResultStatus(result.code),
+    rawStatus: result.code,
     message: result.message,
-    license: serializeLicenseResponse(result.license),
+    license: {
+      ...serializeLicenseResponse(result.license),
+      key: result.license.key,
+      statusNormalized: mapLicenseResultStatus(result.code),
+      hwidBound: Boolean(result.license.hwid),
+    },
   });
 }
