@@ -6,6 +6,20 @@ import { getSessionUser } from "@/lib/auth";
 export const metadata = {
   title: "VKS BOOST",
   description: "Licenciamento e vendas do VKS BOOST",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.png", sizes: "48x48", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/favicon.ico"],
+  },
+  openGraph: {
+    title: "VKS BOOST",
+    description: "Licenciamento e vendas do VKS BOOST",
+    images: ["/vks-boost-logo.png"],
+  },
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {

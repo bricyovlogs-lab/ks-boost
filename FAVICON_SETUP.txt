@@ -1,0 +1,11 @@
+Favicon e ícones adicionados com a logo VKS BOOST.
+
+Arquivos criados em /public:
+- favicon.ico
+- favicon-32x32.png
+- favicon.png
+- apple-touch-icon.png
+- icon-512.png
+- vks-boost-logo.png
+
+O layout principal também foi atualizado para usar esses ícones no metadata do Next.js.
