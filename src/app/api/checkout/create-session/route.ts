@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
     return NextResponse.json(
       { error: "Mercado Pago não configurado. Defina MERCADOPAGO_ACCESS_TOKEN no .env." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -36,6 +36,7 @@ export async function POST(request: Request) {
   const { finalAmount } = calculateDiscountedAmount(config.amount, coupon);
 
   const externalReference = `VKS-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   const preference = await createMercadoPagoPreference({
     title: `VKS BOOST ${config.label}`,
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     payerName: payload.name || undefined,
     itemId: config.mercadoPagoItemId,
     externalReference,
-    notificationUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/mercadopago/webhook`,
+    notificationUrl: `${appUrl}/api/mercadopago/webhook`,
     metadata: {
       plan,
       customerName: payload.name || "",
@@ -76,5 +77,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: checkoutUrl });
   }
 
-  return NextResponse.redirect(checkoutUrl);
+  return NextResponse.redirect(checkoutUrl, 303);
 }

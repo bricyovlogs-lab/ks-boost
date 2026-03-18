@@ -37,67 +37,73 @@ export async function POST(request: Request, context: Context) {
       },
     });
 
-    await prisma.adminLog.create({
-      data: {
-        adminId: admin.id,
-        action: "APPROVE_PAYOUT",
-        targetType: "PAYOUT_REQUEST",
-        targetId: payoutId,
-        description: `Saque aprovado: ${payout.id}`,
-      },
+    await createAuditLog({
+      adminId: admin.id,
+      action: "APPROVE_PAYOUT",
+      targetType: "PAYOUT_REQUEST",
+      targetId: payoutId,
+      description: `Saque aprovado: ${payout.id}`,
     });
   }
 
   if (actionType === "reject" && payout.status === PayoutRequestStatus.PENDING) {
-    await prisma.$transaction([
-      prisma.payoutRequest.update({
+    await prisma.$transaction(async (tx) => {
+      await tx.payoutRequest.update({
         where: { id: payoutId },
         data: {
           status: PayoutRequestStatus.REJECTED,
           reviewedAt: new Date(),
         },
-      }),
-      prisma.affiliateProfile.update({
+      });
+
+      await tx.affiliateProfile.update({
         where: { id: payout.affiliateProfileId },
         data: {
           pendingPayoutCents: { decrement: payout.amountCents },
         },
-      }),
-      createAuditLog({
-        adminId: admin.id,
-        action: "REJECT_PAYOUT",
-        targetType: "PAYOUT_REQUEST",
-        targetId: payoutId,
-        description: `Saque rejeitado: ${payout.id}`,
-      }),
-    ]);
+      });
+
+      await tx.adminLog.create({
+        data: {
+          adminId: admin.id,
+          action: "REJECT_PAYOUT",
+          targetType: "PAYOUT_REQUEST",
+          targetId: payoutId,
+          description: `Saque rejeitado: ${payout.id}`,
+        },
+      });
+    });
   }
 
   if (actionType === "mark_paid" && payout.status === PayoutRequestStatus.APPROVED) {
-    await prisma.$transaction([
-      prisma.payoutRequest.update({
+    await prisma.$transaction(async (tx) => {
+      await tx.payoutRequest.update({
         where: { id: payoutId },
         data: {
           status: PayoutRequestStatus.PAID,
           paidAt: new Date(),
           reviewedAt: payout.reviewedAt || new Date(),
         },
-      }),
-      prisma.affiliateProfile.update({
+      });
+
+      await tx.affiliateProfile.update({
         where: { id: payout.affiliateProfileId },
         data: {
           pendingPayoutCents: { decrement: payout.amountCents },
           paidOutCents: { increment: payout.amountCents },
         },
-      }),
-      createAuditLog({
-        adminId: admin.id,
-        action: "MARK_PAYOUT_PAID",
-        targetType: "PAYOUT_REQUEST",
-        targetId: payoutId,
-        description: `Saque marcado como pago: ${payout.id}`,
-      }),
-    ]);
+      });
+
+      await tx.adminLog.create({
+        data: {
+          adminId: admin.id,
+          action: "MARK_PAYOUT_PAID",
+          targetType: "PAYOUT_REQUEST",
+          targetId: payoutId,
+          description: `Saque marcado como pago: ${payout.id}`,
+        },
+      });
+    });
   }
 
   return contentType.includes("application/json")

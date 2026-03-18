@@ -298,7 +298,7 @@ export async function validateLicenseCore(params: { key: string; hwid?: string }
     return { ok: false, code: "EXPIRED", message: "Licença expirada.", license };
   }
 
-  if ([LicenseStatus.BLOCKED, LicenseStatus.REFUNDED, LicenseStatus.CANCELLED].includes(license.status)) {
+  if ((license.status === LicenseStatus.BLOCKED || license.status === LicenseStatus.REFUNDED || license.status === LicenseStatus.CANCELLED)) {
     return { ok: false, code: "BLOCKED", message: "Licença bloqueada.", license };
   }
 
@@ -460,7 +460,7 @@ export function serializeLicenseResponse(license: {
     status: license.status,
     downloadUrl: DOWNLOAD_URL,
     antiShare: {
-      deviceLocked: !!license.hwid,
+      deviceLocked: true,
       maxDevices: 1,
     },
   };

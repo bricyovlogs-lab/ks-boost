@@ -25,7 +25,7 @@ function maybeValidateSignature(request: NextRequest, dataId: string) {
     signature.split(",").map((part) => {
       const [k, v] = part.split("=");
       return [k?.trim(), v?.trim()];
-    })
+    }),
   );
 
   const ts = parts["ts"] || "";
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Assinatura inválida do Mercado Pago." }, { status: 401 });
   }
 
-  if (topic !== "payment") {
+  if (topic != "payment") {
     return NextResponse.json({ received: true, ignored: topic || "unknown_topic" });
   }
 
@@ -79,32 +79,21 @@ export async function POST(request: NextRequest) {
   }
 
   const metadata = paymentDetails.metadata || {};
-  const itemId =
-    String(
-      metadata.itemId ||
-      paymentDetails.additional_info?.items?.[0]?.id ||
-      ""
-    );
+  const itemId = String(metadata.itemId || paymentDetails.additional_info?.items?.[0]?.id || "");
   const plan = MERCADOPAGO_ITEM_ID_TO_PLAN[itemId];
 
   if (!plan) {
     return NextResponse.json({ error: "Plano não reconhecido no pagamento do Mercado Pago." }, { status: 400 });
   }
 
-  const email =
-    String(
-      metadata.customerEmail ||
-      paymentDetails.payer?.email ||
-      ""
-    );
-
+  const email = String(metadata.customerEmail || paymentDetails.payer?.email || "");
   if (!email) {
     return NextResponse.json({ error: "Email não encontrado no pagamento do Mercado Pago." }, { status: 400 });
   }
 
   const customerName = String(
     metadata.customerName ||
-    [paymentDetails.payer?.first_name, paymentDetails.payer?.last_name].filter(Boolean).join(" ")
+      [paymentDetails.payer?.first_name, paymentDetails.payer?.last_name].filter(Boolean).join(" "),
   );
 
   const payment = await registerPayment({

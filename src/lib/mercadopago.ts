@@ -70,8 +70,6 @@ export async function createMercadoPagoPreference(input: {
     notification_url: input.notificationUrl,
   };
 
-  // Para teste local o Mercado Pago costuma recusar auto_return/back_urls com localhost.
-  // Então só envia isso quando a app URL for pública.
   if (!isLocalhost) {
     payload.back_urls = {
       success: `${appUrl}/success`,
@@ -84,7 +82,7 @@ export async function createMercadoPagoPreference(input: {
   const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${getAccessToken()}`,
+      Authorization: `Bearer ${getAccessToken()}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
@@ -101,7 +99,7 @@ export async function createMercadoPagoPreference(input: {
 export async function getMercadoPagoPayment(paymentId: string | number) {
   const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
     headers: {
-      "Authorization": `Bearer ${getAccessToken()}`,
+      Authorization: `Bearer ${getAccessToken()}`,
       "Content-Type": "application/json",
     },
     cache: "no-store",
