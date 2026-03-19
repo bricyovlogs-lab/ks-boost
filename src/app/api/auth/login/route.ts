@@ -1,22 +1,16 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { comparePassword, createSession, createSessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/validators/auth";
-
-function redirectWithError(request: Request, code: string) {
-  const url = new URL("/login", request.url);
-  url.searchParams.set("error", code);
-  return NextResponse.redirect(url);
-}
+import { ZodError } from "zod";
 
 export async function POST(request: Request) {
-  const contentType = request.headers.get("content-type") || "";
-  const wantsJson =
-    contentType.includes("application/json") ||
-    request.headers.get("accept")?.includes("application/json");
-
   try {
+    const contentType = request.headers.get("content-type") || "";
+    const wantsJson =
+      contentType.includes("application/json") ||
+      request.headers.get("accept")?.includes("application/json");
+
     const rawPayload = wantsJson
       ? await request.json()
       : {
@@ -38,10 +32,12 @@ export async function POST(request: Request) {
           { status: 401 }
         );
       }
-      return redirectWithError(request, "invalid_credentials");
+
+      return NextResponse.redirect(new URL("/login?error=invalid_credentials", request.url));
     }
 
     const valid = await comparePassword(payload.password, user.passwordHash);
+
     if (!valid) {
       if (wantsJson) {
         return NextResponse.json(
@@ -49,13 +45,15 @@ export async function POST(request: Request) {
           { status: 401 }
         );
       }
-      return redirectWithError(request, "invalid_credentials");
+
+      return NextResponse.redirect(new URL("/login?error=invalid_credentials", request.url));
     }
 
     await createSession({ id: user.id, email: user.email, role: user.role });
 
     if (wantsJson) {
       const token = await createSessionToken({ id: user.id, email: user.email, role: user.role });
+
       return NextResponse.json({
         success: true,
         token,
@@ -68,27 +66,16 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.redirect(new URL(user.role === "ADMIN" ? "/admin" : "/dashboard", request.url));
+    return NextResponse.redirect(
+      new URL(user.role === "ADMIN" ? "/admin" : "/dashboard", request.url)
+    );
   } catch (error) {
     console.error("[AUTH_LOGIN_ERROR]", error);
 
     if (error instanceof ZodError) {
-      if (wantsJson) {
-        return NextResponse.json(
-          { success: false, message: "Dados de login inválidos.", issues: error.flatten() },
-          { status: 400 }
-        );
-      }
-      return redirectWithError(request, "invalid_payload");
+      return NextResponse.redirect(new URL("/login?error=invalid_data", request.url));
     }
 
-    if (wantsJson) {
-      return NextResponse.json(
-        { success: false, message: "Erro interno ao realizar login." },
-        { status: 500 }
-      );
-    }
-
-    return redirectWithError(request, "server_error");
+    return NextResponse.redirect(new URL("/login?error=server_error", request.url));
   }
 }

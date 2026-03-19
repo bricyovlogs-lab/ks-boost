@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { createSession, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/validators/auth";
-
-function redirectWithError(request: Request, code: string) {
-  const url = new URL("/register", request.url);
-  url.searchParams.set("error", code);
-  return NextResponse.redirect(url);
-}
+import { ZodError } from "zod";
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +14,9 @@ export async function POST(request: Request) {
     });
 
     const existing = await prisma.user.findUnique({ where: { email: payload.email } });
-    if (existing) return NextResponse.redirect(new URL("/login", request.url));
+    if (existing) {
+      return NextResponse.redirect(new URL("/login?registered=1", request.url));
+    }
 
     const passwordHash = await hashPassword(payload.password);
     const user = await prisma.user.create({
@@ -38,9 +34,9 @@ export async function POST(request: Request) {
     console.error("[AUTH_REGISTER_ERROR]", error);
 
     if (error instanceof ZodError) {
-      return redirectWithError(request, "invalid_payload");
+      return NextResponse.redirect(new URL("/register?error=invalid_data", request.url));
     }
 
-    return redirectWithError(request, "server_error");
+    return NextResponse.redirect(new URL("/register?error=server_error", request.url));
   }
 }
