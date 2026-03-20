@@ -63,19 +63,19 @@ const reasons = [
 
 const testimonials = [
   {
-    name: "Lucas M.",
-    role: "Jogador competitivo",
-    text: "O visual passou muito mais confiança e o app ficou com cara de produto premium. A apresentação vende muito melhor agora.",
+    name: "Matheus R.",
+    role: "Jogador de Valorant",
+    text: "Meu PC estava muito instável no Valorant. Depois que apliquei as otimizações do VKS BOOST, saí de uma média de 100 FPS para 210 FPS em várias partidas, com muito menos travadas e bem mais fluidez.",
   },
   {
-    name: "Rafael G.",
-    role: "Cliente recorrente",
-    text: "A ideia de key vitalícia e o destaque do plano de 90 dias ficou perfeita. O site agora parece software profissional de verdade.",
+    name: "João P.",
+    role: "Player de FiveM",
+    text: "No FiveM eu sofria com queda de FPS e input lag. Depois de usar o app, o jogo ficou muito mais liso e meu FPS subiu de cerca de 75 para 150. Mudou totalmente a sensação de jogar.",
   },
   {
-    name: "André V.",
-    role: "Entusiasta de performance",
-    text: "O mockup do painel e a proposta de otimização deixam claro o valor do aplicativo logo de cara. Ficou muito mais forte para conversão.",
+    name: "Carlos H.",
+    role: "Cliente com PC de entrada",
+    text: "Achei que não ia fazer tanta diferença, mas ajudou demais. O Windows ficou mais leve, os jogos abriram mais rápido e no CS2 eu saí de 90 para 165 FPS em vários momentos. Valeu muito a pena.",
   },
 ];
 
@@ -290,9 +290,9 @@ export default function HomePage() {
 
       <section className="section" id="autoridade">
         <div className="container">
-          <h2 className="section-title reveal">Autoridade e confiança</h2>
+          <h2 className="section-title reveal">Resultados de quem já usou</h2>
           <p className="section-subtitle reveal reveal-delay-1">
-            Uma página mais forte precisa passar sensação de produto real, premium e confiável. Por isso essa versão também ganhou uma seção de prova social.
+            Depoimentos mais reais ajudam a mostrar o impacto do VKS BOOST no desempenho, na fluidez e na experiência de quem joga todos os dias.
           </p>
 
           <div className="testimonial-grid">

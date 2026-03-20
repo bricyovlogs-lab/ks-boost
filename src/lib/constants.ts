@@ -42,6 +42,6 @@ export const MERCADOPAGO_ITEM_ID_TO_PLAN = Object.entries(LICENSE_PLAN_CONFIG).r
 );
 
 export const DOWNLOAD_URL =
-  process.env.DOWNLOAD_URL || "https://example.com/VKS-BOOST-Setup.exe";
+  process.env.DOWNLOAD_URL || "/downloads/VKSBOOST_Setup.exe";
 
 export const DEFAULT_COMMISSION_PERCENT = 10;
