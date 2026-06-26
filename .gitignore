@@ -23,3 +23,10 @@ Thumbs.db
 
 # Vercel
 .vercel
+*.zip
+node_modules/
+.next/
+dist/
+installer_final/
+installer_package/
+.env

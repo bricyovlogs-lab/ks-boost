@@ -1,4 +1,4 @@
-# Integração VKS Precission FIX com o site VKS BOOST
+# Integração VKS Precision FIX com o site VKS BOOST
 
 Rotas adicionadas:
 
@@ -60,7 +60,7 @@ Body:
 - `PRECISSION_FIX`
 - `CROSSHAIR`
 
-O app VKS Precission FIX deve enviar sempre `PRECISSION_FIX`.
+O app VKS Precision FIX deve enviar sempre `PRECISSION_FIX`.
 
 ## Depois de copiar/subir
 

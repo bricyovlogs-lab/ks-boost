@@ -31,7 +31,9 @@ export default function Register() {
       return
     }
 
-    router.push(data.redirectTo || '/cliente')
+    const next = new URLSearchParams(window.location.search).get('next')
+    const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : null
+    router.push(safeNext || data.redirectTo || '/cliente')
     router.refresh()
   }
 
@@ -50,7 +52,7 @@ export default function Register() {
           <h1 className="mt-3 text-6xl font-black leading-none">Crie sua conta e libere suas <span className="text-vks-red brand-title">keys vitalícias</span></h1>
           <p className="mt-6 max-w-xl text-xl text-zinc-300">Depois da compra, sua key fica vinculada automaticamente na conta para baixar os apps.</p>
           <div className="mt-8 grid grid-cols-3 gap-4 max-w-2xl">
-            {['Optimizer','Precission FIX','Crosshair'].map((item) => <div key={item} className="rounded-2xl border border-red-500/20 bg-black/45 p-4 text-center font-bold text-red-100">{item}</div>)}
+            {['Optimizer','Precision FIX','Crosshair'].map((item) => <div key={item} className="rounded-2xl border border-red-500/20 bg-black/45 p-4 text-center font-bold text-red-100">{item}</div>)}
           </div>
         </section>
 

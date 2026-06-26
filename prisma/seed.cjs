@@ -31,8 +31,8 @@ async function main() {
 
   await prisma.product.upsert({
     where: { type: 'PRECISSION_FIX' },
-    update: { name: 'VKS Precission FIX', priceCents: 7990 },
-    create: { name: 'VKS Precission FIX', type: 'PRECISSION_FIX', priceCents: 7990 },
+    update: { name: 'VKS Precision FIX', priceCents: 7990 },
+    create: { name: 'VKS Precision FIX', type: 'PRECISSION_FIX', priceCents: 7990 },
   });
 
   await prisma.product.upsert({

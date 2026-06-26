@@ -30,7 +30,9 @@ export default function Login() {
       return
     }
 
-    router.push(data.redirectTo || '/cliente')
+    const next = new URLSearchParams(window.location.search).get('next')
+    const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : null
+    router.push(safeNext || data.redirectTo || '/cliente')
     router.refresh()
   }
 

@@ -35,7 +35,7 @@ export function DonutChartCard() {
         </div>
         <div className="space-y-3 text-sm">
           <p><span className="text-red-400">●</span> Optimizer</p>
-          <p><span className="text-red-300">●</span> Precission FIX</p>
+          <p><span className="text-red-300">●</span> Precision FIX</p>
           <p><span className="text-red-800">●</span> Crosshair</p>
         </div>
       </div>

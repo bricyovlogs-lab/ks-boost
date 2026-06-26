@@ -20,7 +20,7 @@ const productInfo = {
   },
   PRECISSION_FIX: {
     icon: '🎯',
-    name: 'VKS Precission FIX',
+    name: 'VKS Precision FIX',
     old: 'R$ 159,90',
     price: 'R$ 79,90',
     desc: 'Ajustes competitivos para melhorar controle de mira, resposta e precisão no mouse/teclado.',
@@ -152,7 +152,7 @@ export default async function Cliente() {
 
         <section className="mt-10 grid lg:grid-cols-3 gap-5 pb-10">
           <InfoCard title="Como funciona?" text="Após comprar, a key aparece automaticamente na sua conta. O app consulta sua licença e libera o produto correto." />
-          <InfoCard title="Posso ter todos?" text="Sim. Optimizer, Precission FIX e Crosshair possuem keys separadas e podem ficar ativos juntos." />
+          <InfoCard title="Posso ter todos?" text="Sim. Optimizer, Precision FIX e Crosshair possuem keys separadas e podem ficar ativos juntos." />
           <InfoCard title="Suporte premium" text="Use seu email cadastrado para solicitar ajuda, reset de dispositivo ou suporte de instalação." />
         </section>
       </div>

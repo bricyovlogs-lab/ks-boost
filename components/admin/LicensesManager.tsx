@@ -31,7 +31,7 @@ export function LicensesManager() {
       <div><p className="text-red-400 font-black uppercase tracking-[.25em] text-sm">Sistema de keys</p><h1 className="text-5xl font-black">Licenças / Keys</h1></div>
       <form onSubmit={createLicense} className="rounded-3xl bg-vks-card border border-red-500/20 p-6 glow grid md:grid-cols-4 gap-3">
         <select className="input" value={form.userId} onChange={e => setForm({ ...form, userId: e.target.value })}>{users.map(u => <option key={u.id} value={u.id}>{u.email}</option>)}</select>
-        <select className="input" value={form.productType} onChange={e => setForm({ ...form, productType: e.target.value })}><option value="OPTIMIZER">VKS Boost Optimizer</option><option value="PRECISSION_FIX">Precission FIX</option><option value="CROSSHAIR">Crosshair</option></select>
+        <select className="input" value={form.productType} onChange={e => setForm({ ...form, productType: e.target.value })}><option value="OPTIMIZER">VKS Boost Optimizer</option><option value="PRECISSION_FIX">Precision FIX</option><option value="CROSSHAIR">Crosshair</option></select>
         <select className="input" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}><option value="ACTIVE">Ativa</option><option value="EXPIRED">Expirada</option><option value="BLOCKED">Bloqueada</option></select>
         <button className="btn-red">Gerar key vitalícia</button>
       </form>
