@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  RESELLER
+  CUSTOMER
+}
+
+enum LicenseStatus {
+  ACTIVE
+  EXPIRED
+  BLOCKED
+}
+
+enum ProductType {
+  OPTIMIZER
+  PRECISSION_FIX
+  CROSSHAIR
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+  REJECTED
+}
+
+model User {
+  id           String               @id @default(cuid())
+  name         String?
+  email        String               @unique
+  passwordHash String
+  role         Role                 @default(CUSTOMER)
+  status       String               @default("ACTIVE")
+  createdAt    DateTime             @default(now())
+  licenses     License[]
+  payments     Payment[]
+  coupons      Coupon[]
+  payouts      Payout[]
+  commissions  ResellerCommission[]
+}
+
+model Product {
+  id         String      @id @default(cuid())
+  name       String
+  type       ProductType @unique
+  priceCents Int
+  licenses   License[]
+  payments   Payment[]
+}
+
+model License {
+  id        String        @id @default(cuid())
+  code      String        @unique
+  productId String
+  userId    String
+  status    LicenseStatus @default(ACTIVE)
+  deviceId  String?
+  lifetime  Boolean       @default(true)
+  expiresAt DateTime?
+  createdAt DateTime      @default(now())
+  product   Product       @relation(fields: [productId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  mercadoPagoId String?       @unique
+  status        PaymentStatus @default(PENDING)
+  amountCents   Int
+  userId        String
+  productId     String
+  createdAt     DateTime      @default(now())
+  user          User          @relation(fields: [userId], references: [id])
+  product       Product       @relation(fields: [productId], references: [id])
+}
+
+model Coupon {
+  id         String     @id @default(cuid())
+  code       String     @unique
+  type       CouponType
+  value      Int
+  active     Boolean    @default(true)
+  resellerId String?
+  reseller   User?      @relation(fields: [resellerId], references: [id])
+}
+
+model Payout {
+  id         String       @id @default(cuid())
+  resellerId String
+  pixKey     String
+  amountCents Int
+  status     PayoutStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  reseller   User         @relation(fields: [resellerId], references: [id])
+}
+
+model ResellerCommission {
+  id          String   @id @default(cuid())
+  resellerId  String
+  paymentId   String
+  amountCents Int
+  createdAt   DateTime @default(now())
+  reseller    User     @relation(fields: [resellerId], references: [id])
+}

@@ -1,0 +1,26 @@
+# Dependências
+node_modules
+
+# Build do Next.js
+.next
+out
+
+# Variáveis secretas
+.env
+.env.local
+.env.production
+.env.development
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercelpublic/videos/*.mp4 
+public/video/*.mp4 

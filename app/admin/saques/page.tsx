@@ -1,0 +1,1 @@
+export default function Page(){return <section><h1 className="text-4xl font-black mb-6">Saques</h1><div className="rounded-3xl bg-vks-card border border-red-500/20 p-6 glow">Área para listar, criar, editar e gerenciar saques.</div></section>}
