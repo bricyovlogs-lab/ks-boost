@@ -22,5 +22,4 @@ pnpm-debug.log*
 Thumbs.db
 
 # Vercel
-.vercelpublic/videos/*.mp4 
-public/video/*.mp4 
+.vercel
