@@ -16,7 +16,7 @@ const productInfo = {
     price: 'R$ 49,90',
     desc: 'Otimização completa para Windows 10/11, mais FPS, menos travamentos e melhor fluidez nos jogos.',
     features: ['Windows 10/11 otimizado', 'Remoção de gargalos', 'Licença vitalícia', 'Setup gamer premium'],
-    download: '#download-optimizer',
+    download: '/VKS_Boost_Optimizer_Setup.exe',
   },
   PRECISSION_FIX: {
     icon: '🎯',
@@ -112,7 +112,7 @@ export default async function Cliente() {
                     </div>
                     <div className="flex flex-wrap gap-2 md:justify-end">
                       <button className="rounded-xl border border-red-500/30 px-4 py-3 font-bold hover:bg-red-500/10">Copiar key</button>
-                      <a href={info?.download || '#'} className="rounded-xl bg-red-500 px-5 py-3 font-black shadow-[0_0_18px_rgba(255,23,61,.3)]">Baixar app</a>
+                      <a href={info?.download || '#'} download={info?.download?.endsWith('.exe') ? 'VKS_Boost_Optimizer_Setup.exe' : undefined} className="rounded-xl bg-red-500 px-5 py-3 font-black shadow-[0_0_18px_rgba(255,23,61,.3)]">Baixar app</a>
                     </div>
                   </div>
                 )
@@ -180,7 +180,7 @@ function DownloadCard({ info, hasKey }: { info: any; hasKey: boolean }) {
           <p className={hasKey ? 'text-emerald-300 text-sm' : 'text-zinc-500 text-sm'}>{hasKey ? 'Liberado para download' : 'Key necessária'}</p>
         </div>
       </div>
-      <a href={hasKey ? info.download : '#planos'} className={hasKey ? 'rounded-xl bg-red-500 px-4 py-3 font-black' : 'rounded-xl border border-red-500/30 px-4 py-3 font-bold text-red-200'}>{hasKey ? 'Baixar' : 'Comprar'}</a>
+      <a href={hasKey ? info.download : '#planos'} download={hasKey && info.download?.endsWith('.exe') ? 'VKS_Boost_Optimizer_Setup.exe' : undefined} className={hasKey ? 'rounded-xl bg-red-500 px-4 py-3 font-black' : 'rounded-xl border border-red-500/30 px-4 py-3 font-bold text-red-200'}>{hasKey ? 'Baixar' : 'Comprar'}</a>
     </div>
   )
 }
