@@ -30,7 +30,7 @@ export const productCatalog: Record<ProductTypeName, {
     price: 'R$ 119,90',
     priceCents: 11990,
     icon: '🎯',
-    description: 'Otimização completa do Windows com ajustes da placa de vídeo para mais desempenho, estabilidade e fluidez nos jogos.'
+    description: 'Otimização completa do Windows com ajustes da placa de vídeo para mais desempenho, estabilidade e fluidez nos jogos.',
     features: ['VKS Optimizer completo', 'Otimização da placa de vídeo', 'Mais FPS e estabilidade', 'Licença vitalícia', 'Suporte para configuração'],
   },
   CROSSHAIR: {
@@ -41,7 +41,7 @@ export const productCatalog: Record<ProductTypeName, {
     price: 'R$ 29,90',
     priceCents: 2990,
     icon: '✚',
-    description: 'Windows Lite preparado para quem busca um sistema mais leve, limpo e focado em desempenho.'
+    description: 'Windows Lite preparado para quem busca um sistema mais leve, limpo e focado em desempenho.',
     features: ['Windows mais leve', 'Menos processos em segundo plano', 'Melhor desempenho', 'Instalação simplificada', 'Licença vitalícia'],
   },
 }
