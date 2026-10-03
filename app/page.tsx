@@ -19,8 +19,8 @@ const testimonials = [
   ['Minha mira ficou bem mais controlada. Senti diferença já na primeira configuração.', 'Lucas', 'Valorant'],
   ['Setup ficou pronto sem complicação. Atendimento rápido e resultado real.', 'Matheus', 'CS2'],
   ['O PC ficou mais leve e abriu os jogos mais rápido. Valeu muito a pena.', 'Gustavo', 'Fortnite'],
-  ['Usei o Precision FIX e consegui deixar minha sens muito mais consistente.', 'Pedro', 'FiveM'],
-  ['O Crosshair ajudou demais para treinar foco e posicionamento de tela.', 'Bruno', 'Valorant'],
+  ['Peguei o Optimizer + Placa de Vídeo e o PC ficou muito mais estável nos jogos.', 'Pedro', 'FiveM'],
+  ['O Windows Lite deixou o sistema bem mais leve e rápido para jogar.', 'Bruno', 'Valorant'],
   ['Comprei a key e liberou certinho na conta. Processo simples e automático.', 'Henrique', 'CS2'],
   ['Meu notebook parou de engasgar tanto. Ficou outro nível para jogar.', 'Thiago', 'FiveM'],
 ]
@@ -36,26 +36,26 @@ const products = [
   },
   {
     type: 'PRECISSION_FIX',
-    title: 'VKS Precision FIX',
-    tag: 'Precisão e resposta nos jogos',
-    text: 'Ajustes competitivos para melhorar controle de mira, sensação do mouse e resposta nos games. Feito para quem quer jogar com mais consistência e confiança.',
-    bullets: ['Controle de mira mais firme', 'Ajustes de sensibilidade', 'Perfil competitivo', 'Menos sensação de input lag'],
+    title: 'VKS Optimizer + Placa de Video',
+    tag: 'Windows + GPU otimizados',
+    text: 'Pacote completo com VKS Optimizer e otimização da placa de vídeo para melhorar FPS, estabilidade e fluidez nos jogos.',
+    bullets: ['VKS Optimizer completo', 'Otimização da placa de vídeo', 'Mais FPS e estabilidade', 'Suporte para configuração'],
     image: '/images/preview-precision.png',
   },
   {
     type: 'CROSSHAIR',
-    title: 'VKS Crosshair',
-    tag: 'Mira personalizada na tela',
-    text: 'Painel simples e direto para ativar crosshair personalizado em jogos. Ideal para treinar foco, alinhar mira e deixar seu setup com visual mais competitivo.',
-    bullets: ['Crosshair para jogos', 'Visual personalizável', 'Leve e rápido', 'Perfeito para treinos e highlights'],
+    title: 'VKS Windows Lite',
+    tag: 'Windows leve e otimizado',
+    text: 'Uma versão mais leve do Windows para reduzir processos desnecessários e deixar o PC mais rápido e responsivo.',
+    bullets: ['Windows mais leve', 'Menos processos em segundo plano', 'Melhor desempenho', 'Instalação simplificada'],
     image: '/images/preview-crosshair.png',
   },
 ]
 
 const plans = [
   { type: 'OPTIMIZER', name: 'VKS Boost Optimizer', old: '100,90', price: '49,90', items: ['Windows 10/11 otimizado', 'Melhor desempenho em jogos', 'Otimizador completo', 'Licença vitalícia', 'Liberação automática da key'] },
-  { type: 'PRECISSION_FIX', name: 'VKS Precision FIX', old: '159,90', price: '79,90', items: ['Ajustes para precisão', 'Melhor controle de mira', 'Configurações competitivas', 'Licença vitalícia', 'Perfil para jogadores competitivos'] },
-  { type: 'CROSSHAIR', name: 'VKS Crosshair', old: '15,90', price: '10,00', items: ['Painel de crosshair', 'Mira personalizada', 'Leve para jogos', 'Licença vitalícia', 'Instalação simples'] },
+  { type: 'PRECISSION_FIX', name: 'VKS Optimizer + Placa de Video', old: '159,90', price: '119,90', items: ['VKS Optimizer completo', 'Otimização da placa de vídeo', 'Mais FPS e estabilidade', 'Licença vitalícia', 'Suporte para configuração'] },
+  { type: 'CROSSHAIR', name: 'VKS Windows Lite', old: '59,90', price: '29,90', items: ['Windows mais leve', 'Menos processos em segundo plano', 'Melhor desempenho', 'Licença vitalícia', 'Instalação simplificada'] },
 ] as const
 
 export default async function Home() {
@@ -118,6 +118,9 @@ export default async function Home() {
       </section>
       <FAQ />
       <Footer />
+      <a href="https://discord.com/invite/vksboost" target="_blank" rel="noreferrer" aria-label="Suporte VKS no Discord" title="Suporte no Discord" className="fixed bottom-6 right-6 z-50 grid h-16 w-16 place-items-center rounded-full bg-red-600 border border-red-300/30 shadow-[0_0_32px_rgba(255,23,61,.65)] hover:scale-110 transition">
+        <Image src="/images/support-vks.png" alt="Suporte VKS" width={44} height={44} className="h-11 w-11 object-contain" />
+      </a>
     </main>
   )
 }
@@ -149,6 +152,6 @@ function Product({ title, tag, text, bullets, image, right }: { title: string; t
 
 function Testimonials() { const list = [...testimonials, ...testimonials]; return <section className="relative z-10 px-6 py-20 overflow-hidden"><div className="max-w-7xl mx-auto mb-8"><p className="text-vks-red font-black tracking-widest">VALIDAÇÕES REAIS</p><h2 className="text-5xl font-black">Resultados dos clientes</h2></div><div className="testimonial-track">{list.map((t, i) => <div className="w-[360px] rounded-[1.7rem] bg-black/65 border border-red-500/25 p-6 glow" key={`${t[1]}-${i}`}><p className="text-yellow-400 tracking-widest">★★★★★</p><p className="text-zinc-300 my-4 min-h-20">“{t[0]}”</p><b>{t[1]}</b><p className="text-vks-red text-sm font-bold">Usado em {t[2]}</p></div>)}</div></section> }
 
-function FAQ() { return <section className="relative z-10 max-w-5xl mx-auto px-6 py-16"><h2 className="text-4xl font-black mb-8">FAQ</h2>{[['O que acontece depois da compra?', 'Após o pagamento aprovado, sua key é liberada automaticamente na sua conta.'], ['Como o app sabe qual key está ativa?', 'O aplicativo consulta sua conta e identifica se a key ativa é do VKS Boost Optimizer, VKS Precision FIX ou VKS Crosshair.'], ['Posso ter os três aplicativos?', 'Sim, cada produto possui sua própria key e pode ser ativado separadamente.'], ['O pagamento é automático?', 'Sim, o pagamento via Mercado Pago libera a key automaticamente após aprovação.']].map((f) => <details className="rounded-2xl bg-black/60 border border-red-500/20 p-5 mb-3 glow" key={f[0]}><summary className="font-bold cursor-pointer">{f[0]}</summary><p className="text-zinc-300 mt-3">{f[1]}</p></details>)}</section> }
+function FAQ() { return <section className="relative z-10 max-w-5xl mx-auto px-6 py-16"><h2 className="text-4xl font-black mb-8">FAQ</h2>{[['O que acontece depois da compra?', 'Após o pagamento aprovado, sua key é liberada automaticamente na sua conta.'], ['Como o app sabe qual key está ativa?', 'O aplicativo consulta sua conta e identifica se a key ativa é do VKS Boost Optimizer, VKS Optimizer + Placa de Video ou VKS Windows Lite.'], ['Posso ter os três aplicativos?', 'Sim, cada produto possui sua própria key e pode ser ativado separadamente.'], ['O pagamento é automático?', 'Sim, o pagamento via Mercado Pago libera a key automaticamente após aprovação.']].map((f) => <details className="rounded-2xl bg-black/60 border border-red-500/20 p-5 mb-3 glow" key={f[0]}><summary className="font-bold cursor-pointer">{f[0]}</summary><p className="text-zinc-300 mt-3">{f[1]}</p></details>)}</section> }
 
 function Footer() { return <footer className="relative z-10 border-t border-red-500/10 bg-black/55 py-10 px-6"><div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-3"><p className="text-zinc-400">© 2026 VKS BOOST — performance, otimização, cupons e ativação premium.</p><a className="text-sm text-red-200 hover:text-white" href="/checkout?product=OPTIMIZER">Termos de compra disponíveis no checkout</a></div></footer> }

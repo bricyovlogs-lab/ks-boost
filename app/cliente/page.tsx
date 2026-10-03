@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../../lib/prisma'
@@ -20,21 +21,21 @@ const productInfo = {
   },
   PRECISSION_FIX: {
     icon: '🎯',
-    name: 'VKS Precision FIX',
+    name: 'VKS Optimizer + Placa de Video',
     old: 'R$ 159,90',
-    price: 'R$ 79,90',
-    desc: 'Ajustes competitivos para melhorar controle de mira, resposta e precisão no mouse/teclado.',
-    features: ['Ajustes para precisão', 'Controle de mira', 'Configurações competitivas', 'Licença vitalícia'],
-    download: '#download-precision',
+    price: 'R$ 119,90',
+    desc: 'VKS Optimizer + otimização da placa de vídeo para mais desempenho e estabilidade nos jogos.',
+    features: ['VKS Optimizer completo', 'Otimização da placa de vídeo', 'Mais FPS e estabilidade', 'Licença vitalícia'],
+    download: 'https://discord.com/invite/vksboost',
   },
   CROSSHAIR: {
     icon: '✚',
-    name: 'VKS Crosshair',
-    old: 'R$ 15,90',
-    price: 'R$ 10,00',
-    desc: 'Mira personalizada na tela para jogos, ideal para quem quer visual mais limpo e competitivo.',
-    features: ['Crosshair para jogos', 'Visual limpo', 'Configuração rápida', 'Baixo consumo'],
-    download: '#download-crosshair',
+    name: 'VKS Windows Lite',
+    old: 'R$ 59,90',
+    price: 'R$ 29,90',
+    desc: 'Windows mais leve, limpo e focado em desempenho para jogos e uso diário.',
+    features: ['Windows mais leve', 'Menos processos', 'Melhor desempenho', 'Instalação simplificada'],
+    download: 'https://discord.com/invite/vksboost',
   },
 } as const
 
@@ -82,7 +83,7 @@ export default async function Cliente() {
         <section className="grid md:grid-cols-4 gap-4 mt-8">
           <Stat title="Usuário" value={user?.name || session?.name || 'Cliente'} small={user?.email || session?.email || 'Faça login'} />
           <Stat title="Keys ativas" value={String(activeLicenses.length)} small="Licenças liberadas" />
-          <Stat title="Produtos disponíveis" value="3" small="Optimizer, Precision e Crosshair" />
+          <Stat title="Produtos disponíveis" value="3" small="Optimizer, Optimizer + GPU e Windows Lite" />
           <Stat title="Status da conta" value={user?.status || 'ACTIVE'} small="Conta premium gamer" />
         </section>
 
@@ -112,7 +113,14 @@ export default async function Cliente() {
                     </div>
                     <div className="flex flex-wrap gap-2 md:justify-end">
                       <button className="rounded-xl border border-red-500/30 px-4 py-3 font-bold hover:bg-red-500/10">Copiar key</button>
-                      <a href={info?.download || '#'} download={info?.download?.endsWith('.exe') ? 'VKS_Boost_Optimizer_Setup.exe' : undefined} className="rounded-xl bg-red-500 px-5 py-3 font-black shadow-[0_0_18px_rgba(255,23,61,.3)]">Baixar app</a>
+                      {license.product.type === 'PRECISSION_FIX' ? (
+                        <>
+                          <a href="/VKS_Boost_Optimizer_Setup.exe" download="VKS_Boost_Optimizer_Setup.exe" className="rounded-xl bg-red-500 px-5 py-3 font-black shadow-[0_0_18px_rgba(255,23,61,.3)]">Baixar VKS Optimizer</a>
+                          <a href="https://discord.com/invite/vksboost" target="_blank" rel="noreferrer" className="rounded-xl border border-red-500/40 px-5 py-3 font-black text-red-100 hover:bg-red-500/10">Discord / Configuração</a>
+                        </>
+                      ) : (
+                        <a href={info?.download || '#'} download={info?.download?.endsWith('.exe') ? 'VKS_Boost_Optimizer_Setup.exe' : undefined} className="rounded-xl bg-red-500 px-5 py-3 font-black shadow-[0_0_18px_rgba(255,23,61,.3)]">Baixar app</a>
+                      )}
                     </div>
                   </div>
                 )
@@ -152,10 +160,13 @@ export default async function Cliente() {
 
         <section className="mt-10 grid lg:grid-cols-3 gap-5 pb-10">
           <InfoCard title="Como funciona?" text="Após comprar, a key aparece automaticamente na sua conta. O app consulta sua licença e libera o produto correto." />
-          <InfoCard title="Posso ter todos?" text="Sim. Optimizer, Precision FIX e Crosshair possuem keys separadas e podem ficar ativos juntos." />
+          <InfoCard title="Posso ter todos?" text="Sim. Optimizer, Optimizer + Placa de Video e Windows Lite possuem keys separadas e podem ficar ativos juntos." />
           <InfoCard title="Suporte premium" text="Use seu email cadastrado para solicitar ajuda, reset de dispositivo ou suporte de instalação." />
         </section>
       </div>
+      <a href="https://discord.com/invite/vksboost" target="_blank" rel="noreferrer" aria-label="Suporte VKS no Discord" title="Suporte no Discord" className="fixed bottom-6 right-6 z-50 grid h-16 w-16 place-items-center rounded-full bg-red-600 border border-red-300/30 shadow-[0_0_32px_rgba(255,23,61,.65)] hover:scale-110 transition">
+        <Image src="/images/support-vks.png" alt="Suporte VKS" width={44} height={44} className="h-11 w-11 object-contain" />
+      </a>
     </main>
   )
 }

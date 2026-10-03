@@ -24,25 +24,25 @@ export const productCatalog: Record<ProductTypeName, {
   },
   PRECISSION_FIX: {
     type: 'PRECISSION_FIX',
-    name: 'VKS Precision FIX',
-    shortName: 'Precision FIX',
+    name: 'VKS Optimizer + Placa de Video',
+    shortName: 'Optimizer + GPU',
     oldPrice: 'R$ 159,90',
-    price: 'R$ 79,90',
-    priceCents: 7990,
+    price: 'R$ 119,90',
+    priceCents: 11990,
     icon: '🎯',
-    description: 'Ajustes competitivos para melhorar controle de mira, resposta e precisão no mouse/teclado.',
-    features: ['Ajustes para precisão', 'Melhor controle de mira', 'Configurações competitivas', 'Licença vitalícia', 'Perfil para jogadores competitivos'],
+    description: 'Otimização completa do Windows com ajustes da placa de vídeo para mais desempenho, estabilidade e fluidez nos jogos.'
+    features: ['VKS Optimizer completo', 'Otimização da placa de vídeo', 'Mais FPS e estabilidade', 'Licença vitalícia', 'Suporte para configuração'],
   },
   CROSSHAIR: {
     type: 'CROSSHAIR',
-    name: 'VKS Crosshair',
-    shortName: 'Crosshair',
-    oldPrice: 'R$ 15,90',
-    price: 'R$ 10,00',
-    priceCents: 1000,
+    name: 'VKS Windows Lite',
+    shortName: 'Windows Lite',
+    oldPrice: 'R$ 59,90',
+    price: 'R$ 29,90',
+    priceCents: 2990,
     icon: '✚',
-    description: 'Mira personalizada na tela para jogos, ideal para quem quer visual mais limpo e competitivo.',
-    features: ['Crosshair para jogos', 'Visual limpo', 'Configuração rápida', 'Baixo consumo', 'Licença vitalícia'],
+    description: 'Windows Lite preparado para quem busca um sistema mais leve, limpo e focado em desempenho.'
+    features: ['Windows mais leve', 'Menos processos em segundo plano', 'Melhor desempenho', 'Instalação simplificada', 'Licença vitalícia'],
   },
 }
 
