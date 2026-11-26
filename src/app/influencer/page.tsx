@@ -45,7 +45,6 @@ export default async function InfluencerPage() {
     );
   }
 
-  const traffic = profile.payments.length;
   const conversions = profile.payments.length;
   const avgSale = conversions > 0 ? Math.round(profile.totalRevenueCents / conversions) : 0;
   const availablePayout = Math.max(
@@ -57,8 +56,8 @@ export default async function InfluencerPage() {
     <section className="saas-shell">
       <div className="container saas-grid">
         <AdminSidebar
-          title="Partner Panel"
-          subtitle="influencer / reseller"
+          title="Painel do parceiro"
+          subtitle="Vendedor / criador de conteúdo"
           links={[
             { href: "/influencer", label: "Dashboard", icon: <HomeIcon /> },
             { href: "/dashboard", label: "Conta Cliente", icon: <UsersIcon /> },
@@ -71,8 +70,8 @@ export default async function InfluencerPage() {
           <section className="premium-admin-shell v7">
             <div className="premium-admin-top">
               <div className="premium-admin-title">
-                <h1>Dashboard Partner</h1>
-                <p>Acompanhe vendas atribuídas, comissões, ticket médio e desempenho dos seus cupons.</p>
+                <h1>Painel do parceiro</h1>
+                <p>Quanto você vendeu com o seu cupom, sua comissão e o saldo para saque.</p>
               </div>
 
               <div className="status-chip large">
@@ -88,25 +87,25 @@ export default async function InfluencerPage() {
               <div className="metric-neo">
                 <div className="metric-icon-box"><StatIcon><ChartIcon /></StatIcon></div>
                 <span className="metric-corner-dot" />
-                <div className="metric-label-neo">Tráfego</div>
-                <div className="metric-value-neo">{traffic}</div>
-                <div className="metric-sub-neo">Cliques / vendas atribuídas</div>
+                <div className="metric-label-neo">Total vendido</div>
+                <div className="metric-value-neo big-money">{formatBRL(profile.totalRevenueCents)}</div>
+                <div className="metric-sub-neo">Pago pelos clientes com o seu cupom</div>
               </div>
 
               <div className="metric-neo">
                 <div className="metric-icon-box"><StatIcon><UsersIcon /></StatIcon></div>
                 <span className="metric-corner-dot" />
-                <div className="metric-label-neo">Conversões</div>
+                <div className="metric-label-neo">Vendas</div>
                 <div className="metric-value-neo">{conversions}</div>
-                <div className="metric-sub-neo">Pedidos pagos no seu código</div>
+                <div className="metric-sub-neo">Vendas pagas com o seu cupom</div>
               </div>
 
               <div className="metric-neo">
                 <div className="metric-icon-box"><StatIcon><MoneyIcon /></StatIcon></div>
                 <span className="metric-corner-dot" />
-                <div className="metric-label-neo">Lucro total</div>
+                <div className="metric-label-neo">Sua comissão</div>
                 <div className="metric-value-neo big-money">{formatBRL(profile.totalCommissionCents)}</div>
-                <div className="metric-sub-neo">Comissão acumulada</div>
+                <div className="metric-sub-neo">{profile.commissionPercent}% de cada venda</div>
               </div>
 
               <div className="metric-neo">

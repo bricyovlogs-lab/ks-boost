@@ -1,18 +1,27 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { LICENSE_PLAN_CONFIG, STORE_PLANS, type StorePlan } from "@/lib/constants";
+import { formatBRL } from "@/lib/utils";
 
 type Props = {
-  defaultPlan?: "DAYS_30" | "DAYS_90" | "LIFETIME";
+  defaultPlan?: StorePlan;
 };
 
-const planOptions = [
-  { value: "DAYS_30", label: "30 dias", price: "R$ 35,00", desc: "Ideal para começar e testar tudo." },
-  { value: "DAYS_90", label: "90 dias", price: "R$ 65,00", desc: "Mais vendido e melhor custo-benefício." },
-  { value: "LIFETIME", label: "Vitalícia", price: "R$ 99,90", desc: "Compra única, sem renovação." },
-] as const;
+const planDesc: Record<StorePlan, string> = {
+  BOOST_OPTIMIZER: "Otimizador completo, licença vitalícia.",
+  BOOST_GPU: "Otimizador + ajustes da placa de vídeo. Mais vendido.",
+  WINDOWS_LITE: "Windows mais leve, licença vitalícia.",
+};
 
-export function PurchaseModal({ defaultPlan = "DAYS_90" }: Props) {
+const planOptions = STORE_PLANS.map((value) => ({
+  value,
+  label: LICENSE_PLAN_CONFIG[value].label,
+  price: formatBRL(LICENSE_PLAN_CONFIG[value].amount),
+  desc: planDesc[value],
+}));
+
+export function PurchaseModal({ defaultPlan = "BOOST_GPU" }: Props) {
   const [open, setOpen] = useState(false);
   const [plan, setPlan] = useState(defaultPlan);
   const [name, setName] = useState("");
@@ -24,7 +33,7 @@ export function PurchaseModal({ defaultPlan = "DAYS_90" }: Props) {
   useEffect(() => {
     const openModal = (event: Event) => {
       const custom = event as CustomEvent<{ plan?: typeof defaultPlan }>;
-      setPlan(custom.detail?.plan || defaultPlan);
+      setPlan((STORE_PLANS as readonly string[]).includes(custom.detail?.plan ?? "") ? (custom.detail!.plan as StorePlan) : defaultPlan);
       setOpen(true);
       setErrorMessage("");
     };
@@ -43,7 +52,7 @@ export function PurchaseModal({ defaultPlan = "DAYS_90" }: Props) {
   }, [open, loading]);
 
   const selected = useMemo(
-    () => planOptions.find((item) => item.value === plan) ?? planOptions[1],
+    () => planOptions.find((item) => item.value === plan) ?? planOptions[0],
     [plan]
   );
 

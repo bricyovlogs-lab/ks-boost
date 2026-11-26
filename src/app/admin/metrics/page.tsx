@@ -10,7 +10,7 @@ export default async function AdminMetricsPage() {
     prisma.payment.count({ where: { status: "PAID" } }),
     prisma.payment.aggregate({ where: { status: "PAID" }, _sum: { amount: true, affiliateCommissionCents: true } }),
     prisma.license.count({ where: { status: "ACTIVE" } }),
-    prisma.license.count({ where: { plan: "LIFETIME" } }),
+    prisma.license.count({ where: { plan: { in: ["LIFETIME", "BOOST_OPTIMIZER", "BOOST_GPU", "WINDOWS_LITE"] } } }),
     prisma.affiliateProfile.count(),
   ]);
 

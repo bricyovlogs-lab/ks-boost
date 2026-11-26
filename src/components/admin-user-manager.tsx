@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 type RoleValue = "CUSTOMER" | "ADMIN" | "AFFILIATE" | "RESELLER";
-type PlanValue = "DAYS_30" | "DAYS_90" | "LIFETIME";
+type PlanValue = "BOOST_OPTIMIZER" | "BOOST_GPU" | "WINDOWS_LITE" | "DAYS_30" | "DAYS_90" | "LIFETIME";
 
 type UserRow = {
   id: string;
@@ -21,6 +21,9 @@ const roleOptions: Array<{ value: RoleValue; label: string }> = [
 ];
 
 const planOptions: Array<{ value: PlanValue; label: string }> = [
+  { value: "BOOST_OPTIMIZER", label: "VKS Boost Optimizer (vitalícia)" },
+  { value: "BOOST_GPU", label: "VKS Optimizer + Placa de Vídeo (vitalícia)" },
+  { value: "WINDOWS_LITE", label: "VKS Windows Lite (vitalícia)" },
   { value: "DAYS_30", label: "30 dias" },
   { value: "DAYS_90", label: "90 dias" },
   { value: "LIFETIME", label: "Vitalícia" },

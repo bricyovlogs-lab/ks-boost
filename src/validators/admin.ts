@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const adminCreateLicenseSchema = z.object({
   email: z.string().email(),
-  plan: z.enum(["DAYS_30", "DAYS_90", "LIFETIME"]),
+  plan: z.enum(["DAYS_30", "DAYS_90", "LIFETIME", "BOOST_OPTIMIZER", "BOOST_GPU", "WINDOWS_LITE"]),
 });
 
 export const adminResetHwidSchema = z.object({

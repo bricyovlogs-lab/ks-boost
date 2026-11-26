@@ -19,6 +19,9 @@ enum LicensePlan {
   DAYS_30
   DAYS_90
   LIFETIME
+  BOOST_OPTIMIZER
+  BOOST_GPU
+  WINDOWS_LITE
 }
 
 enum LicenseStatus {

@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   const preference = await createMercadoPagoPreference({
-    title: `VKS BOOST ${config.label}`,
+    title: config.title,
     unitPrice: Number((finalAmount / 100).toFixed(2)),
     quantity: 1,
     payerEmail: payload.email,

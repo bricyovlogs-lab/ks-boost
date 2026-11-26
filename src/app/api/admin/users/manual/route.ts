@@ -50,7 +50,7 @@ export async function POST(request: Request) {
           userId: user.id,
           displayName: name || email.split("@")[0],
           codePrefix: email.split("@")[0].slice(0, 12).toUpperCase(),
-          commissionPercent: role === "RESELLER" ? 15 : 10,
+          commissionPercent: 35, // vendedor e criador de conteúdo: 35% do valor pago
           isActive: true,
         },
       });
