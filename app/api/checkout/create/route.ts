@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 import { normalizeProductType, productCatalog } from '@/lib/products'
 import { resolveCoupon } from '@/lib/reseller'
+import { allow, clientIp } from '@/lib/rate-limit'
+import { secret } from '@/lib/session'
 
 type JwtUser = { id: string; email: string; name?: string; role: string }
 
@@ -14,7 +16,7 @@ function parseToken(req: NextRequest) {
   const token = req.cookies.get('vks_token')?.value
   if (!token) return null
   try {
-    return jwt.verify(token, process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'vksboostsupersecret') as JwtUser
+    return jwt.verify(token, secret()) as JwtUser
   } catch {
     return null
   }
@@ -25,6 +27,11 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: NextRequest) {
   const baseUrl = getBaseUrl(req)
   const session = parseToken(req)
+
+  // Evita robô criando pedidos em massa
+  if (!allow(`checkout:${clientIp(req)}`, 20, 10 * 60_000)) {
+    return NextResponse.redirect(new URL('/checkout?error=limite', baseUrl), 303)
+  }
 
   if (!session?.id) {
     return NextResponse.redirect(new URL('/login', baseUrl), 303)

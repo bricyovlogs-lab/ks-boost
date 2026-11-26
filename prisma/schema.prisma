@@ -73,6 +73,7 @@ model License {
   userId    String
   status    LicenseStatus @default(ACTIVE)
   deviceId  String?
+  paymentId String?
   lifetime  Boolean       @default(true)
   expiresAt DateTime?
   createdAt DateTime      @default(now())

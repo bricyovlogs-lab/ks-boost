@@ -5,8 +5,24 @@ import { prisma } from '@/lib/prisma'
 
 export type JwtUser = { id: string; email: string; name?: string; role: string }
 
-function secret() {
-  return process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'vksboostsupersecret'
+let warned = false
+/** Chave que assina os logins. Na Vercel PRECISA existir JWT_SECRET (ou NEXTAUTH_SECRET). */
+export function secret() {
+  const value = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET
+  if (value) return value
+  if (process.env.NODE_ENV === 'production' && !warned) {
+    warned = true
+    console.error('SEGURANCA: JWT_SECRET não configurado na Vercel. Configure uma chave longa e secreta.')
+  }
+  return 'vksboostsupersecret'
+}
+
+export const SESSION_COOKIE = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  secure: process.env.NODE_ENV === 'production',
+  path: '/',
+  maxAge: 60 * 60 * 24 * 7,
 }
 
 export function verifyToken(token?: string | null): JwtUser | null {

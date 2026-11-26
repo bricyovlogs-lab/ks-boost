@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserWithRole } from '@/lib/session'
 import { getResellerBalance } from '@/lib/reseller'
+import { allow } from '@/lib/rate-limit'
 
 /** Revendedor pede saque via PIX do saldo disponível. */
 export async function POST(req: Request) {
@@ -13,6 +14,7 @@ export async function POST(req: Request) {
   const amountCents = Math.round(Number(String(form.get('amount') || '0').replace(',', '.')) * 100)
   const back = (q: string) => NextResponse.redirect(new URL(`/revendedor?${q}`, req.url), 303)
 
+  if (!allow(`saque:${user.id}`, 5, 60 * 60_000)) return back('saque=limite')
   if (!pixKey) return back('saque=pix')
   if (!Number.isFinite(amountCents) || amountCents < 100) return back('saque=valor')
 

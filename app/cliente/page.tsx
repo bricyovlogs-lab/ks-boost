@@ -1,6 +1,8 @@
 import Image from 'next/image'
+import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
+import { secret } from '@/lib/session'
 import { prisma } from '../../lib/prisma'
 
 type JwtUser = { id: string; email: string; name?: string; role: string }
@@ -43,7 +45,7 @@ async function getLoggedUser() {
   const token = (await cookies()).get('vks_token')?.value
   if (!token) return null
   try {
-    return jwt.verify(token, process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'vksboostsupersecret') as JwtUser
+    return jwt.verify(token, secret()) as JwtUser
   } catch {
     return null
   }
@@ -57,6 +59,9 @@ export default async function Cliente() {
         include: { licenses: { include: { product: true }, orderBy: { createdAt: 'desc' } }, payments: { include: { product: true }, orderBy: { createdAt: 'desc' } } },
       })
     : null
+
+  // Sem login (ou conta bloqueada) não vê o painel
+  if (!user || user.status !== 'ACTIVE') redirect('/login?next=/cliente')
 
   const activeLicenses = user?.licenses.filter((l) => l.status === 'ACTIVE') || []
   const activeTypes = new Set(activeLicenses.map((l) => l.product.type))

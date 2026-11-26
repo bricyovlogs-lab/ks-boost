@@ -9,7 +9,7 @@ function prefixForProduct(type: string) {
   return 'VKS-PREC'
 }
 
-async function approveLocalPayment(localPaymentId: string, mercadoPagoPaymentId?: string) {
+async function approveLocalPayment(localPaymentId: string, mercadoPagoPaymentId: string, paidCents: number) {
   const localPayment = await prisma.payment.findUnique({
     where: { id: localPaymentId },
     include: { product: true, user: true },
@@ -17,6 +17,12 @@ async function approveLocalPayment(localPaymentId: string, mercadoPagoPaymentId?
 
   if (!localPayment) return { ok: true, ignored: true, reason: 'payment_not_found' }
   if (localPayment.status === 'APPROVED') return { ok: true, payment: localPayment.id, alreadyApproved: true }
+
+  // Segurança: o valor pago no Mercado Pago tem que bater com o pedido
+  if (paidCents + 1 < localPayment.amountCents) {
+    console.error('PAGAMENTO_COM_VALOR_MENOR', { localPaymentId, paidCents, esperado: localPayment.amountCents })
+    return { ok: true, ignored: true, reason: 'amount_mismatch' }
+  }
 
   // Aprova só uma vez, mesmo se o Mercado Pago avisar duas vezes ao mesmo tempo
   const claimed = await prisma.payment.updateMany({
@@ -36,6 +42,7 @@ async function approveLocalPayment(localPaymentId: string, mercadoPagoPaymentId?
       productId: localPayment.productId,
       lifetime: true,
       status: 'ACTIVE',
+      paymentId: localPayment.id,
     },
   })
 
@@ -51,6 +58,15 @@ async function approveLocalPayment(localPaymentId: string, mercadoPagoPaymentId?
   }
 
   return { ok: true, payment: updated.id }
+}
+
+async function revokePayment(localPaymentId: string) {
+  const payment = await prisma.payment.findUnique({ where: { id: localPaymentId } })
+  if (!payment) return
+  await prisma.payment.update({ where: { id: payment.id }, data: { status: 'REJECTED' } })
+  await prisma.license.updateMany({ where: { paymentId: payment.id }, data: { status: 'BLOCKED' } })
+  await prisma.resellerCommission.deleteMany({ where: { paymentId: payment.id } })
+  console.warn('PAGAMENTO_ESTORNADO_KEY_BLOQUEADA', payment.id)
 }
 
 export const dynamic = 'force-dynamic'
@@ -90,13 +106,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, ignored: true, reason: 'no_external_reference' })
     }
 
+    // Estorno / chargeback / cancelamento depois de aprovado: bloqueia a key e tira a comissão
+    if (['refunded', 'charged_back', 'cancelled'].includes(status)) {
+      await revokePayment(localPaymentId)
+      return NextResponse.json({ ok: true, revoked: true, status })
+    }
+
     if (status !== 'approved') {
+      // Nunca "desaprova" um pagamento já aprovado por causa de um aviso atrasado
       const localStatus = status === 'rejected' ? 'REJECTED' : 'PENDING'
-      await prisma.payment.updateMany({ where: { id: localPaymentId }, data: { status: localStatus as any } })
+      await prisma.payment.updateMany({ where: { id: localPaymentId, status: { not: 'APPROVED' } }, data: { status: localStatus as any } })
       return NextResponse.json({ ok: true, pending: true, status })
     }
 
-    const result = await approveLocalPayment(localPaymentId, mercadoPagoPaymentId)
+    const paidCents = Math.round(Number(mpPayment?.transaction_amount || 0) * 100)
+    const result = await approveLocalPayment(localPaymentId, mercadoPagoPaymentId, paidCents)
     return NextResponse.json(result)
   } catch (error) {
     console.error('MERCADO_PAGO_WEBHOOK_ERROR', error)

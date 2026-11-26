@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server'
+import { SESSION_COOKIE } from '@/lib/session'
 
-function clearAndRedirect() {
-  const response = NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'))
-  response.cookies.set('vks_token', '', { path: '/', maxAge: 0 })
+function clearAndRedirect(req: Request) {
+  const response = NextResponse.redirect(new URL('/', req.url), 303)
+  response.cookies.set('vks_token', '', { ...SESSION_COOKIE, maxAge: 0 })
   return response
 }
 
-export async function GET() {
-  return clearAndRedirect()
+export async function GET(req: Request) {
+  return clearAndRedirect(req)
 }
 
-export async function POST() {
-  return clearAndRedirect()
+export async function POST(req: Request) {
+  return clearAndRedirect(req)
 }

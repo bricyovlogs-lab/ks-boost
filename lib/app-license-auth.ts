@@ -2,8 +2,11 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { secret } from '@/lib/session'
+import { allow, clientIp, tooMany } from '@/lib/rate-limit'
 
-const TOKEN_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'vksboostsupersecret'
+const TOKEN_SECRET = secret()
+const DUMMY_HASH = '$2a$10$G8wRRg7n/.km8ZQKrVOgvel5PcxAiQHTmPR0H6cfZ7vfP2ZGHo8Ce'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,6 +28,8 @@ export function licenseResponse(payload: Record<string, any>, status = 200) {
 
 export async function handleAppLogin(req: Request, forcedProductType?: ProductTypeName) {
   try {
+    // Anti-força-bruta no login do aplicativo
+    if (!allow(`applogin:${clientIp(req)}`, 15, 10 * 60_000)) return tooMany()
     const body = await req.json()
     const email = String(body.email || '').toLowerCase().trim()
     const password = String(body.password || '')
@@ -55,22 +60,11 @@ export async function handleAppLogin(req: Request, forcedProductType?: ProductTy
       },
     })
 
-    if (!user) {
-      return licenseResponse(
-        {
-          success: false,
-          ok: false,
-          valid: false,
-          can_open_app: false,
-          canOpen: false,
-          message: 'Conta não encontrada.',
-        },
-        401,
-      )
-    }
+    if (!allow(`applogin:email:${email}`, 8, 15 * 60_000)) return tooMany()
 
-    const passwordOk = await bcrypt.compare(password, user.passwordHash)
-    if (!passwordOk) {
+    // Mesma resposta para "conta não existe" e "senha errada" (não entrega quais emails têm conta)
+    const passwordOk = await bcrypt.compare(password, user?.passwordHash || DUMMY_HASH)
+    if (!user || !passwordOk) {
       return licenseResponse(
         {
           success: false,

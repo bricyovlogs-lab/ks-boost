@@ -13,6 +13,7 @@ const SAQUE_MSG: Record<string, [string, boolean]> = {
   pix: ['Informe a sua chave PIX.', false],
   valor: ['Informe um valor válido.', false],
   saldo: ['O valor é maior que o seu saldo disponível.', false],
+  limite: ['Muitos pedidos de saque. Tente de novo mais tarde.', false],
 }
 
 export default async function Revendedor({ searchParams }: { searchParams: Promise<{ saque?: string }> }) {
