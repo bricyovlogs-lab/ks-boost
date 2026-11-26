@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
+import { denyIfNotAdmin } from '@/lib/session'
 
 export async function GET() {
+  const denied = await denyIfNotAdmin()
+  if (denied) return denied
   const coupons = await prisma.coupon.findMany({ orderBy: { id: 'desc' }, include: { reseller: true } })
   return NextResponse.json(coupons)
 }
 
 export async function POST(req: Request) {
+  const denied = await denyIfNotAdmin()
+  if (denied) return denied
   const body = await req.json()
   const coupon = await prisma.coupon.create({
     data: {

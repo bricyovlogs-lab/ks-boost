@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
+import { denyIfNotAdmin } from '@/lib/session'
 
 function makeKey(productType: string) {
   return `VKS-${productType.replace('_', '').slice(0, 4)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${Date.now().toString().slice(-5)}`
 }
 
 export async function GET() {
+  const denied = await denyIfNotAdmin()
+  if (denied) return denied
   const licenses = await prisma.license.findMany({
     orderBy: { createdAt: 'desc' },
     include: { user: true, product: true },
@@ -14,6 +17,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const denied = await denyIfNotAdmin()
+  if (denied) return denied
   const body = await req.json()
   const product = await prisma.product.findUnique({ where: { type: body.productType } })
   if (!product) return NextResponse.json({ error: 'Produto não encontrado. Rode npm run seed.' }, { status: 400 })

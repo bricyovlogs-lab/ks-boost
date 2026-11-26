@@ -1,63 +1,85 @@
-import { prisma } from '../../lib/prisma'
-import { BarChartCard, DonutChartCard } from '../../components/admin/AdminCharts'
+import { prisma } from '@/lib/prisma'
+import { money, RESELLER_COMMISSION_PERCENT } from '@/lib/reseller'
+import { productCatalog } from '@/lib/products'
 
-function money(cents: number) {
-  return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
+export const dynamic = 'force-dynamic'
 
 export default async function Admin() {
-  const [users, payments, licenses, coupons, revenue] = await Promise.all([
+  const since = new Date()
+  since.setHours(0, 0, 0, 0)
+  since.setDate(since.getDate() - 6)
+
+  const [users, resellers, licenses, revenue, commissions, pendingPayouts, recent, byProduct] = await Promise.all([
     prisma.user.count(),
-    prisma.payment.count(),
-    prisma.license.count(),
-    prisma.coupon.count(),
-    prisma.payment.aggregate({ _sum: { amountCents: true }, where: { status: 'APPROVED' } }),
+    prisma.user.count({ where: { role: 'RESELLER' } }),
+    prisma.license.count({ where: { status: 'ACTIVE' } }),
+    prisma.payment.aggregate({ _sum: { amountCents: true }, _count: true, where: { status: 'APPROVED' } }),
+    prisma.resellerCommission.aggregate({ _sum: { amountCents: true } }),
+    prisma.payout.aggregate({ _sum: { amountCents: true }, _count: true, where: { status: 'PENDING' } }),
+    prisma.payment.findMany({ where: { status: 'APPROVED', createdAt: { gte: since } }, select: { amountCents: true, createdAt: true } }),
+    prisma.payment.groupBy({ by: ['productId'], _count: true, where: { status: 'APPROVED' } }),
   ])
 
-  const cards = [
-    { label: 'Usuários cadastrados', value: users, info: 'clientes, admins e revendedores' },
-    { label: 'Pedidos', value: payments, info: 'histórico Mercado Pago' },
-    { label: 'Licenças/Keys', value: licenses, info: 'ativas, bloqueadas e expiradas' },
-    { label: 'Cupons', value: coupons, info: 'campanhas e revendedores' },
-    { label: 'Receita aprovada', value: money(revenue._sum.amountCents || 0), info: 'pagamentos aprovados' },
-    { label: 'Status do sistema', value: 'Online', info: 'Neon + Prisma ativo' },
-  ]
+  const products = await prisma.product.findMany()
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(since)
+    d.setDate(since.getDate() + i)
+    const total = recent.filter((p) => p.createdAt.toDateString() === d.toDateString()).reduce((s, p) => s + p.amountCents, 0)
+    return { label: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), total }
+  })
+  const max = Math.max(1, ...days.map((d) => d.total))
+  const weekTotal = days.reduce((s, d) => s + d.total, 0)
+  const salesCount = revenue._count || 0
+  const productRows = products.map((p) => ({
+    name: productCatalog[p.type as keyof typeof productCatalog]?.shortName || p.name,
+    count: byProduct.find((b) => b.productId === p.id)?._count || 0,
+  }))
+  const productMax = Math.max(1, ...productRows.map((p) => p.count))
 
   return (
-    <section className="space-y-8">
-      <div className="flex items-end justify-between gap-4">
+    <section>
+      <div className="px-top">
         <div>
-          <p className="text-red-400 font-black uppercase tracking-[.25em] text-sm">Controle total VKS</p>
-          <h1 className="text-5xl font-black">Dashboard Admin</h1>
-        </div>
-        <div className="rounded-2xl border border-red-500/25 bg-red-950/20 px-5 py-3 text-sm text-zinc-300">
-          Painel para vendas, keys, usuários e cupons
+          <div className="px-eyebrow">Controle total VKS</div>
+          <h1 className="px-title">Dashboard<em>.</em></h1>
+          <p className="px-sub">Vendas, keys, parceiros e saques em tempo real.</p>
         </div>
       </div>
 
-      <div className="grid xl:grid-cols-3 md:grid-cols-2 gap-5">
-        {cards.map((card) => (
-          <div key={card.label} className="rounded-3xl bg-vks-card border border-red-500/20 p-6 glow hover:border-red-500/50 transition">
-            <p className="text-zinc-400">{card.label}</p>
-            <b className="block text-3xl text-vks-red mt-2">{card.value}</b>
-            <small className="text-zinc-500">{card.info}</small>
+      <div className="px-stats">
+        <div className="px-stat is-accent"><div className="px-stat-label">Receita aprovada</div><div className="px-stat-value">{money(revenue._sum.amountCents || 0)}</div><div className="px-stat-sub">{salesCount} venda{salesCount === 1 ? '' : 's'}</div></div>
+        <div className="px-stat"><div className="px-stat-label">Keys ativas</div><div className="px-stat-value">{licenses}</div><div className="px-stat-sub">{users} contas no total</div></div>
+        <div className="px-stat"><div className="px-stat-label">Comissões</div><div className="px-stat-value">{money(commissions._sum.amountCents || 0)}</div><div className="px-stat-sub">{resellers} parceiro{resellers === 1 ? '' : 's'} · {RESELLER_COMMISSION_PERCENT}%</div></div>
+        <div className="px-stat"><div className="px-stat-label">Saques pendentes</div><div className="px-stat-value">{money(pendingPayouts._sum.amountCents || 0)}</div><div className="px-stat-sub"><a href="/admin/saques">{pendingPayouts._count} para pagar →</a></div></div>
+      </div>
+
+      <div className="px-grid-2">
+        <div className="px-card">
+          <div className="px-card-head"><h2>Vendas dos últimos 7 dias</h2><span className="px-chip">{money(weekTotal)}</span></div>
+          <div className="px-bars">
+            {days.map((d) => (
+              <div key={d.label} className="px-bar">
+                <span className="px-bar-value">{d.total ? money(d.total).replace(',00', '') : ''}</span>
+                <div className="px-bar-fill" style={{ height: `${Math.max(3, (d.total / max) * 100)}%` }} />
+                <span className="px-bar-label">{d.label}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-
-      <div className="grid xl:grid-cols-2 gap-6">
-        <BarChartCard />
-        <DonutChartCard />
-      </div>
-
-      <div className="rounded-3xl bg-gradient-to-r from-red-950/40 to-black border border-red-500/20 p-6 glow">
-        <h3 className="text-2xl font-black mb-2">Ações rápidas</h3>
-        <p className="text-zinc-400 mb-4">Use o menu lateral para criar contas, transformar cliente em revendedor, gerar keys, bloquear licenças e criar cupons.</p>
-        <div className="grid md:grid-cols-4 gap-3 text-sm">
-          <a className="rounded-2xl bg-red-500 px-4 py-3 font-black text-center" href="/admin/usuarios">Gerenciar usuários</a>
-          <a className="rounded-2xl border border-red-500/40 px-4 py-3 font-black text-center" href="/admin/keys">Gerar key</a>
-          <a className="rounded-2xl border border-red-500/40 px-4 py-3 font-black text-center" href="/admin/cupons">Criar cupom</a>
-          <a className="rounded-2xl border border-red-500/40 px-4 py-3 font-black text-center" href="/admin/pagamentos">Ver pedidos</a>
+        </div>
+        <div className="px-card">
+          <div className="px-card-head"><h2>Vendas por produto</h2></div>
+          <div className="px-hbars">
+            {productRows.map((p) => (
+              <div key={p.name}>
+                <div className="px-hbar-head"><span>{p.name}</span><b>{p.count}</b></div>
+                <div className="px-hbar"><div style={{ width: `${(p.count / productMax) * 100}%` }} /></div>
+              </div>
+            ))}
+            {!productRows.length ? <p className="px-empty">Sem vendas ainda.</p> : null}
+          </div>
+          <div className="px-quick">
+            <a href="/admin/usuarios">Criar conta</a><a href="/admin/cupons">Criar cupom</a><a href="/admin/keys">Gerar key</a><a href="/admin/pagamentos">Ver pedidos</a>
+          </div>
         </div>
       </div>
     </section>

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import jwt from 'jsonwebtoken'
 import { productCatalog, normalizeProductType } from '@/lib/products'
+import { resolveCoupon, money } from '@/lib/reseller'
 
 type JwtUser = { id: string; email: string; name?: string; role: string }
 
@@ -16,15 +17,20 @@ async function getLoggedUser() {
   }
 }
 
-export default async function Checkout({ searchParams }: { searchParams: Promise<{ product?: string; error?: string }> }) {
+export default async function Checkout({ searchParams }: { searchParams: Promise<{ product?: string; error?: string; cupom?: string }> }) {
   const params = await searchParams
   const productType = normalizeProductType(params?.product)
   const product = productCatalog[productType]
   const user = await getLoggedUser()
 
+  const couponParam = String(params?.cupom || '').trim().toUpperCase()
+
   if (!user) {
-    redirect(`/login?next=/checkout?product=${productType}`)
+    redirect(`/login?next=${encodeURIComponent(`/checkout?product=${productType}${couponParam ? `&cupom=${couponParam}` : ''}`)}`)
   }
+
+  const { coupon, discountCents, error: couponError } = await resolveCoupon(couponParam, product.priceCents, user.id)
+  const totalCents = product.priceCents - discountCents
 
   return (
     <main className="premium-shell min-h-screen text-white overflow-hidden px-6 py-8">
@@ -46,7 +52,7 @@ export default async function Checkout({ searchParams }: { searchParams: Promise
             <h1 className="mt-2 text-4xl md:text-5xl font-black">Confirme sua compra</h1>
             <p className="mt-3 text-zinc-400">Leia e aceite os termos para seguir para o Mercado Pago. A key é liberada automaticamente após aprovação.</p>
 
-            {params?.error && <p className="mt-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-100">Não foi possível iniciar o pagamento. Confira o token Mercado Pago na Vercel e tente novamente.</p>}
+            {params?.error && params.error !== 'coupon' && <p className="mt-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-100">Não foi possível iniciar o pagamento. Confira o token Mercado Pago na Vercel e tente novamente.</p>}
 
             <div className="terms-box mt-6 rounded-2xl border border-red-500/25 bg-black/55 p-5 text-sm leading-relaxed text-zinc-300">
               <h2>TERMOS DE COMPRA – VKS BOOST</h2>
@@ -98,14 +104,23 @@ export default async function Checkout({ searchParams }: { searchParams: Promise
             </div>
             <div className="mt-7 rounded-2xl border border-red-500/20 bg-black/45 p-5">
               <div className="flex items-center justify-between text-zinc-400"><span>Preço original</span><span className="line-through">{product.oldPrice}</span></div>
-              <div className="mt-3 flex items-end justify-between"><span className="text-zinc-300">Total hoje</span><strong className="text-5xl font-black text-white">{product.price}</strong></div>
+              {coupon ? <div className="mt-3 flex items-center justify-between text-emerald-300"><span>Cupom {coupon.code}</span><span>− {money(discountCents)}</span></div> : null}
+              <div className="mt-3 flex items-end justify-between"><span className="text-zinc-300">Total hoje</span><strong className="text-5xl font-black text-white">{coupon ? money(totalCents) : product.price}</strong></div>
               <p className="mt-2 text-sm text-red-200">Pagamento único • licença vitalícia</p>
             </div>
             <ul className="mt-6 space-y-3 text-zinc-200">
               {product.features.map((feature) => <li key={feature}>✓ {feature}</li>)}
             </ul>
-            <form action="/api/checkout/create" method="post" className="mt-7">
+            <form action="/checkout" method="get" className="mt-7 flex gap-2">
               <input type="hidden" name="product" value={productType} />
+              <input name="cupom" defaultValue={couponParam} placeholder="Cupom de desconto" className="input uppercase" />
+              <button className="rounded-2xl border border-red-500/40 px-5 font-black hover:bg-red-500/10 transition">Aplicar</button>
+            </form>
+            {couponParam && couponError ? <p className="mt-2 text-sm text-red-300">{couponError}</p> : null}
+            {coupon ? <p className="mt-2 text-sm text-emerald-300">Cupom aplicado: {coupon.type === 'PERCENT' ? `${coupon.value}% de desconto` : `${money(coupon.value * 100)} de desconto`}.</p> : null}
+            <form action="/api/checkout/create" method="post" className="mt-5">
+              <input type="hidden" name="product" value={productType} />
+              {coupon ? <input type="hidden" name="coupon" value={coupon.code} /> : null}
               <label className="flex gap-3 rounded-2xl border border-red-500/20 bg-black/45 p-4 text-sm text-zinc-300">
                 <input required type="checkbox" name="acceptedTerms" value="yes" className="mt-1 h-5 w-5 accent-red-500" />
                 <span>Li e aceito os Termos de Compra, política de licença, entrega digital e reembolso da VKS BOOST.</span>

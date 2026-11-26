@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 import { normalizeProductType, productCatalog } from '@/lib/products'
+import { resolveCoupon } from '@/lib/reseller'
 
 type JwtUser = { id: string; email: string; name?: string; role: string }
 
@@ -43,6 +44,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', baseUrl), 303)
   }
 
+  // Cupom de revendedor / criador: desconto para o cliente e comissão para quem indicou
+  const couponInput = String(form.get('coupon') || '').trim().toUpperCase()
+  const { coupon, discountCents, error: couponError } = await resolveCoupon(couponInput, catalog.priceCents, user.id)
+  if (couponInput && couponError) {
+    return NextResponse.redirect(new URL(`/checkout?product=${productType}&cupom=${encodeURIComponent(couponInput)}&error=coupon`, baseUrl), 303)
+  }
+  const finalCents = catalog.priceCents - discountCents
+
   const product = await prisma.product.upsert({
     where: { type: productType },
     update: { name: catalog.name, priceCents: catalog.priceCents },
@@ -53,8 +62,11 @@ export async function POST(req: NextRequest) {
     data: {
       userId: user.id,
       productId: product.id,
-      amountCents: catalog.priceCents,
+      amountCents: finalCents,
       status: 'PENDING',
+      couponCode: coupon?.code || null,
+      discountCents,
+      resellerId: coupon?.resellerId || null,
     },
   })
 
@@ -68,10 +80,10 @@ export async function POST(req: NextRequest) {
       {
         id: product.type,
         title: product.name,
-        description: `Key vitalícia ${product.name} - VKS BOOST`,
+        description: coupon ? `Key vitalícia ${product.name} - cupom ${coupon.code}` : `Key vitalícia ${product.name} - VKS BOOST`,
         quantity: 1,
         currency_id: 'BRL',
-        unit_price: catalog.priceCents / 100,
+        unit_price: finalCents / 100,
       },
     ],
     payer: {

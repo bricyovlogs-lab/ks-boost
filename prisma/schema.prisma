@@ -87,6 +87,9 @@ model Payment {
   amountCents   Int
   userId        String
   productId     String
+  couponCode    String?
+  discountCents Int           @default(0)
+  resellerId    String?
   createdAt     DateTime      @default(now())
   user          User          @relation(fields: [userId], references: [id])
   product       Product       @relation(fields: [productId], references: [id])

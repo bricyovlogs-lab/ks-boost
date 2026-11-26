@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../../lib/prisma'
+import { denyIfNotAdmin } from '@/lib/session'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function PATCH(req: Request, { params }: Params) {
+  const denied = await denyIfNotAdmin()
+  if (denied) return denied
   const { id } = await params
   const body = await req.json()
   const data: any = {}
@@ -17,6 +20,8 @@ export async function PATCH(req: Request, { params }: Params) {
 }
 
 export async function DELETE(_: Request, { params }: Params) {
+  const denied = await denyIfNotAdmin()
+  if (denied) return denied
   const { id } = await params
   await prisma.coupon.delete({ where: { id } })
   return NextResponse.json({ ok: true })

@@ -54,7 +54,7 @@ export function UsersManager() {
         <input className="input" placeholder="Email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
         <input className="input" placeholder="Senha" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
         <select className="input" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-          <option value="CUSTOMER">Cliente</option><option value="RESELLER">Revendedor</option><option value="ADMIN">Admin</option>
+          <option value="CUSTOMER">Cliente</option><option value="RESELLER">Revendedor / Criador</option><option value="ADMIN">Admin</option>
         </select>
         <select className="input" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
           <option value="ACTIVE">Ativo</option><option value="BLOCKED">Bloqueado</option>

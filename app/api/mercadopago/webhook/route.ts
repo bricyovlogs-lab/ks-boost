@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createKey } from '@/lib/license'
+import { RESELLER_COMMISSION_PERCENT } from '@/lib/reseller'
 
 function prefixForProduct(type: string) {
   if (type === 'OPTIMIZER') return 'VKS-OPTI'
@@ -17,13 +18,16 @@ async function approveLocalPayment(localPaymentId: string, mercadoPagoPaymentId?
   if (!localPayment) return { ok: true, ignored: true, reason: 'payment_not_found' }
   if (localPayment.status === 'APPROVED') return { ok: true, payment: localPayment.id, alreadyApproved: true }
 
-  const updated = await prisma.payment.update({
-    where: { id: localPayment.id },
+  // Aprova só uma vez, mesmo se o Mercado Pago avisar duas vezes ao mesmo tempo
+  const claimed = await prisma.payment.updateMany({
+    where: { id: localPayment.id, status: { not: 'APPROVED' } },
     data: {
       status: 'APPROVED',
       ...(mercadoPagoPaymentId ? { mercadoPagoId: mercadoPagoPaymentId } : {}),
     },
   })
+  if (claimed.count === 0) return { ok: true, payment: localPayment.id, alreadyApproved: true }
+  const updated = localPayment
 
   await prisma.license.create({
     data: {
@@ -35,6 +39,17 @@ async function approveLocalPayment(localPaymentId: string, mercadoPagoPaymentId?
     },
   })
 
+  // Comissão de 35% para o revendedor / criador dono do cupom
+  if (localPayment.resellerId) {
+    await prisma.resellerCommission.create({
+      data: {
+        resellerId: localPayment.resellerId,
+        paymentId: localPayment.id,
+        amountCents: Math.round(localPayment.amountCents * (RESELLER_COMMISSION_PERCENT / 100)),
+      },
+    })
+  }
+
   return { ok: true, payment: updated.id }
 }
 
@@ -44,12 +59,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}))
     const mercadoPagoPaymentId = body?.data?.id?.toString() || body?.paymentId?.toString()
-    const directLocalPaymentId = body?.external_reference?.toString() || body?.localPaymentId?.toString()
-
-    if (directLocalPaymentId) {
-      const result = await approveLocalPayment(directLocalPaymentId, mercadoPagoPaymentId)
-      return NextResponse.json(result)
-    }
+    // Segurança: o pagamento só é aprovado depois de conferido direto na API do Mercado Pago.
+    // (Antes dava para mandar { localPaymentId } e liberar uma key sem pagar.)
 
     if (!mercadoPagoPaymentId) {
       return NextResponse.json({ ok: true, ignored: true, reason: 'no_payment_id' })
